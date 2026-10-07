@@ -2,17 +2,9 @@ import React, { useState } from 'react';
 import { assignCases } from '../services/api';
 
 function CaseAssignment() {
-  const [casesInput, setCasesInput] = useState('CASE-101\nCASE-102\nCASE-103\nCASE-104');
-  const [analystsInput, setAnalystsInput] = useState('ANALYST-A\nANALYST-B\nANALYST-C');
-  const [eligibility, setEligibility] = useState([
-    { caseId: 'CASE-101', analystId: 'ANALYST-A' },
-    { caseId: 'CASE-101', analystId: 'ANALYST-C' },
-    { caseId: 'CASE-102', analystId: 'ANALYST-B' },
-    { caseId: 'CASE-102', analystId: 'ANALYST-C' },
-    { caseId: 'CASE-103', analystId: 'ANALYST-A' },
-    { caseId: 'CASE-103', analystId: 'ANALYST-B' },
-    { caseId: 'CASE-104', analystId: 'ANALYST-C' }
-  ]);
+  const [casesInput, setCasesInput] = useState('');
+  const [analystsInput, setAnalystsInput] = useState('');
+  const [eligibility, setEligibility] = useState([]);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -33,6 +25,14 @@ function CaseAssignment() {
 
   const parseLines = (text) => text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
+  
+  const handleLoadExample = () => {
+    setCasesInput('CASE-101\nCASE-102\nCASE-103\nCASE-104');
+    setAnalystsInput('ANALYST-A\nANALYST-B\nANALYST-C');
+    setEligibility([{ caseId: 'CASE-101', analystId: 'ANALYST-A' }, { caseId: 'CASE-101', analystId: 'ANALYST-C' }, { caseId: 'CASE-102', analystId: 'ANALYST-B' }]);
+  };
+  const handleClear = () => { setCasesInput(''); setAnalystsInput(''); setEligibility([]); setResult(null); setError(null); };
+  
   const handleAssign = async () => {
     setError(null);
     setResult(null);
@@ -139,7 +139,10 @@ function CaseAssignment() {
         </div>
 
         <div className="form-actions mt-4">
-          <button className="btn btn-primary" onClick={handleAssign} disabled={loading}>
+          
+        <button className="btn btn-secondary mr-2" onClick={handleLoadExample}>Load Example</button>
+        <button className="btn btn-tertiary mr-2" onClick={handleClear}>Clear</button>
+        <button className="btn btn-primary" onClick={handleAssign} disabled={loading}>
             {loading ? 'Assigning...' : 'Assign Cases'}
           </button>
         </div>

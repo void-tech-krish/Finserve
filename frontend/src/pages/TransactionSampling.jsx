@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import { sampleTransactions } from '../services/api';
 
 function TransactionSampling() {
-  const [transactions, setTransactions] = useState([
-    { transactionId: 'TXN-101', amount: '4500', merchant: 'Amazon' },
-    { transactionId: 'TXN-102', amount: '1200', merchant: 'Flipkart' },
-    { transactionId: 'TXN-103', amount: '9800', merchant: 'Apple' },
-    { transactionId: 'TXN-104', amount: '3200', merchant: 'Walmart' },
-    { transactionId: 'TXN-105', amount: '7500', merchant: 'Amazon' }
-  ]);
+  const [transactions, setTransactions] = useState([]);
   const [sampleSize, setSampleSize] = useState(2);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -28,6 +22,21 @@ function TransactionSampling() {
     setTransactions(transactions.filter((_, i) => i !== index));
   };
 
+  
+  const handleLoadExample = () => {
+    setTransactions([
+      { transactionId: 'TXN-101', amount: '4500', merchant: 'Amazon' },
+      { transactionId: 'TXN-102', amount: '1200', merchant: 'Flipkart' },
+      { transactionId: 'TXN-103', amount: '9800', merchant: 'Apple' },
+      { transactionId: 'TXN-104', amount: '3200', merchant: 'Walmart' },
+      { transactionId: 'TXN-105', amount: '750', merchant: 'Starbucks' },
+      { transactionId: 'TXN-106', amount: '5600', merchant: 'Sony' },
+      { transactionId: 'TXN-107', amount: '2300', merchant: 'Nike' }
+    ]);
+    setSampleSize('3');
+  };
+  const handleClear = () => { setTransactions([]); setSampleSize(''); setResult(null); setError(null); };
+  
   const handleSample = async () => {
     setError(null);
     setResult(null);
@@ -126,7 +135,10 @@ function TransactionSampling() {
         </div>
 
         <div className="form-actions mt-4">
-          <button className="btn btn-primary" onClick={handleSample} disabled={loading}>
+          
+        <button className="btn btn-secondary mr-2" onClick={handleLoadExample}>Load Example</button>
+        <button className="btn btn-tertiary mr-2" onClick={handleClear}>Clear</button>
+        <button className="btn btn-primary" onClick={handleSample} disabled={loading}>
             {loading ? 'Sampling...' : 'Sample Transactions'}
           </button>
         </div>

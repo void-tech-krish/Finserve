@@ -2,14 +2,8 @@ import React, { useState } from 'react';
 import { analyzeRiskCoverage } from '../services/api';
 
 function RiskCoverage() {
-  const [nodesInput, setNodesInput] = useState('BANK_A\nBANK_B\nBANK_C\nBANK_D\nBANK_E');
-  const [riskyEdges, setRiskyEdges] = useState([
-    { from: 'BANK_A', to: 'BANK_B' },
-    { from: 'BANK_A', to: 'BANK_C' },
-    { from: 'BANK_B', to: 'BANK_D' },
-    { from: 'BANK_C', to: 'BANK_D' },
-    { from: 'BANK_D', to: 'BANK_E' }
-  ]);
+  const [nodesInput, setNodesInput] = useState('');
+  const [riskyEdges, setRiskyEdges] = useState([]);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -30,6 +24,13 @@ function RiskCoverage() {
 
   const parseNodes = (text) => text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
+  
+  const handleLoadExample = () => {
+    setNodesInput('BANK_A\nBANK_B\nBANK_C\nBANK_D\nBANK_E');
+    setRiskyEdges([{ from: 'BANK_A', to: 'BANK_B' }, { from: 'BANK_A', to: 'BANK_C' }, { from: 'BANK_B', to: 'BANK_D' }, { from: 'BANK_C', to: 'BANK_D' }, { from: 'BANK_D', to: 'BANK_E' }]);
+  };
+  const handleClear = () => { setNodesInput(''); setRiskyEdges([]); setResult(null); setError(null); };
+  
   const handleAnalyze = async () => {
     setError(null);
     setResult(null);
@@ -121,7 +122,10 @@ function RiskCoverage() {
         </div>
 
         <div className="form-actions mt-4">
-          <button className="btn btn-primary" onClick={handleAnalyze} disabled={loading}>
+          
+        <button className="btn btn-secondary mr-2" onClick={handleLoadExample}>Load Example</button>
+        <button className="btn btn-tertiary mr-2" onClick={handleClear}>Clear</button>
+        <button className="btn btn-primary" onClick={handleAnalyze} disabled={loading}>
             {loading ? 'Analyzing...' : 'Analyze Risk Coverage'}
           </button>
         </div>

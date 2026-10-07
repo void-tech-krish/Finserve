@@ -17,6 +17,12 @@ export default function TransactionIntelligence() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  
+  const handleLoadExample = () => {
+    setSearchQuery('AMAZON');
+  };
+  const handleClear = () => { setSearchQuery(''); setResult(null); setError(null); };
+  
   const handleSearch = async () => {
     setLoading(true);
     setError(null);
@@ -62,6 +68,9 @@ export default function TransactionIntelligence() {
             className="form-control"
           />
         </div>
+        
+        <button className="btn btn-secondary mr-2" onClick={handleLoadExample}>Load Example</button>
+        <button className="btn btn-tertiary mr-2" onClick={handleClear}>Clear</button>
         <button className="btn btn-primary" onClick={handleSearch} disabled={loading}>
           {loading ? 'Searching...' : 'Search Transaction'}
         </button>

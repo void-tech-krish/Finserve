@@ -3,13 +3,20 @@ import { matchTransaction } from '../services/api';
 import { AlertTriangle, CheckCircle2, XCircle, Info, FileText } from 'lucide-react';
 
 export default function TransactionMatching() {
-  const [transactionA, setTransactionA] = useState('AMAZON PAYMENT');
-  const [transactionB, setTransactionB] = useState('AMAZN PAYMENT');
+  const [transactionA, setTransactionA] = useState('');
+  const [transactionB, setTransactionB] = useState('');
   const [algorithm, setAlgorithm] = useState('levenshtein');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  
+  const handleLoadExample = () => {
+    setTransactionA('AMAZON PAYMENT');
+    setTransactionB('AMAZN PAYMENT');
+  };
+  const handleClear = () => { setTransactionA(''); setTransactionB(''); setResult(null); setError(null); };
+  
   const handleMatch = async () => {
     if (!transactionA || !transactionB) {
       setError('Both transactions are required for comparison.');
@@ -69,6 +76,9 @@ export default function TransactionMatching() {
             <option value="damerau-levenshtein">Damerau-Levenshtein</option>
           </select>
         </div>
+        
+        <button className="btn btn-secondary mr-2" onClick={handleLoadExample}>Load Example</button>
+        <button className="btn btn-tertiary mr-2" onClick={handleClear}>Clear</button>
         <button className="btn btn-primary" onClick={handleMatch} disabled={loading}>
           {loading ? 'Comparing...' : 'Compare Transactions'}
         </button>

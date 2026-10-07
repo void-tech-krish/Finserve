@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { rankTransactions } from '../services/api';
 
 function TransactionRanking() {
-  const [transactions, setTransactions] = useState([
-    { transactionId: 'TXN-101', amount: '4500' },
-    { transactionId: 'TXN-102', amount: '1200' },
-    { transactionId: 'TXN-103', amount: '9800' },
-    { transactionId: 'TXN-104', amount: '3200' }
-  ]);
+  const [transactions, setTransactions] = useState([]);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -26,6 +21,17 @@ function TransactionRanking() {
     setTransactions(transactions.filter((_, i) => i !== index));
   };
 
+  
+  const handleLoadExample = () => {
+    setTransactions([
+      { transactionId: 'TXN-101', amount: '4500' },
+      { transactionId: 'TXN-102', amount: '1200' },
+      { transactionId: 'TXN-103', amount: '9800' },
+      { transactionId: 'TXN-104', amount: '3200' }
+    ]);
+  };
+  const handleClear = () => { setTransactions([]); setResult(null); setError(null); };
+  
   const handleRank = async () => {
     setError(null);
     setResult(null);
@@ -97,7 +103,10 @@ function TransactionRanking() {
         </div>
 
         <div className="form-actions mt-4">
-          <button className="btn btn-primary" onClick={handleRank} disabled={loading}>
+          
+        <button className="btn btn-secondary mr-2" onClick={handleLoadExample}>Load Example</button>
+        <button className="btn btn-tertiary mr-2" onClick={handleClear}>Clear</button>
+        <button className="btn btn-primary" onClick={handleRank} disabled={loading}>
             {loading ? 'Ranking...' : 'Rank Transactions'}
           </button>
         </div>

@@ -2,12 +2,8 @@ import React, { useState } from 'react';
 import { validateRules } from '../services/api';
 
 function RuleValidation() {
-  const [variablesInput, setVariablesInput] = useState('HIGH_AMOUNT\nINTERNATIONAL\nNEW_DEVICE\nVERIFIED_USER\nHIGH_RISK_COUNTRY');
-  const [clauses, setClauses] = useState([
-    ['HIGH_AMOUNT', 'INTERNATIONAL', 'VERIFIED_USER'],
-    ['!HIGH_AMOUNT', 'NEW_DEVICE', 'VERIFIED_USER'],
-    ['INTERNATIONAL', '!NEW_DEVICE', 'HIGH_RISK_COUNTRY']
-  ]);
+  const [variablesInput, setVariablesInput] = useState('');
+  const [clauses, setClauses] = useState([]);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -28,6 +24,13 @@ function RuleValidation() {
 
   const parseVariables = (text) => text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
+  
+  const handleLoadExample = () => {
+    setVariablesInput('HIGH_AMOUNT\nINTERNATIONAL\nNEW_DEVICE\nVERIFIED_USER\nHIGH_RISK_COUNTRY');
+    setClauses([['HIGH_AMOUNT', 'INTERNATIONAL', 'VERIFIED_USER'], ['!HIGH_AMOUNT', 'NEW_DEVICE', 'VERIFIED_USER'], ['INTERNATIONAL', '!NEW_DEVICE', 'HIGH_RISK_COUNTRY']]);
+  };
+  const handleClear = () => { setVariablesInput(''); setClauses([]); setResult(null); setError(null); };
+  
   const handleValidate = async () => {
     setError(null);
     setResult(null);
@@ -113,7 +116,10 @@ function RuleValidation() {
         </div>
 
         <div className="form-actions mt-4">
-          <button className="btn btn-primary" onClick={handleValidate} disabled={loading}>
+          
+        <button className="btn btn-secondary mr-2" onClick={handleLoadExample}>Load Example</button>
+        <button className="btn btn-tertiary mr-2" onClick={handleClear}>Clear</button>
+        <button className="btn btn-primary" onClick={handleValidate} disabled={loading}>
             {loading ? 'Validating...' : 'Validate Banking Rules'}
           </button>
         </div>
