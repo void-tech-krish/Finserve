@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard AI - Fraud Intelligence</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        accent: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        slate: {
+                            850: '#151e2e', // For deep text
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.03)',
+                        'float': '0 20px 40px -10px rgba(0, 0, 0, 0.08)',
+                        'premium': '0 10px 40px -10px rgba(37, 99, 235, 0.15)',
+                        'stripe': '0 13px 27px -5px rgba(50,50,93,0.25), 0 8px 16px -8px rgba(0,0,0,0.3)',
+                        'stripe-subtle': '0 4px 6px rgba(50,50,93,0.11), 0 1px 3px rgba(0,0,0,0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        html {
+            background-color: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #0f172a;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+
+        /* Subtle background image watermark across the entire page */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to bottom, rgba(248, 250, 252, 0) 0%, rgba(248, 250, 252, 1) 100%),
+                url('watermarked_img_6161604422724432500.png');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            opacity: 0.06;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Subtle mesh gradient background for Hero mimicking modern fintech */
+        .hero-bg {
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(220,100%,97%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(250,100%,97%,1) 0, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(210,100%,97%,1) 0, transparent 50%);
+        }
+
+        /* Scroll Animations */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Floating animation for hero images */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        /* Slow pulse for background glow */
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 4s ease-in-out infinite;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Grid background for sections */
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="selection:bg-brand-100 selection:text-brand-900">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 top-0 transition-all duration-300 bg-white/70 backdrop-blur-lg border-b border-slate-200/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex items-center gap-2 cursor-pointer group">
+                    <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white shadow-md group-hover:bg-brand-700 transition-colors">
+                        <i class="ph-bold ph-shield-check text-xl"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-slate-900">Vanguard<span class="text-brand-600">.ai</span></span>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Products</a>
+                    <a href="#" class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Solutions</a>
+                    <a href="#" class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Developers</a>
+                    <a href="#" class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Pricing</a>
+                </div>
+
+                <!-- Actions -->
+                <div class="hidden md:flex items-center space-x-5">
+                    <a href="#" class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Sign in</a>
+                    <button class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold py-2.5 px-5 rounded-full transition-all shadow-sm hover:shadow-md">
+                        Start Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="relative pt-32 pb-20 lg:pt-44 lg:pb-32 overflow-hidden hero-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                
+                <!-- Hero Content -->
+                <div class="max-w-2xl fade-in-up">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 border border-brand-100/50 text-brand-700 text-sm font-bold mb-8 shadow-sm">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+                        </span>
+                        Fraud Intelligence API v2.0
+                    </div>
+                    
+                    <h1 class="text-5xl lg:text-[4rem] font-extrabold text-slate-900 tracking-tight leading-[1.05] mb-6">
+                        Financial security, <br />
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-accent-500">engineered for scale.</span>
+                    </h1>
+                    
+                    <p class="text-lg text-slate-600 mb-10 leading-relaxed max-w-lg font-medium">
+                        Protect your revenue and user experience simultaneously. Our AI infrastructure detects sophisticated fraud rings in milliseconds, blocking bad actors before they transact.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button class="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3.5 px-8 rounded-full transition-all shadow-premium flex items-center justify-center gap-2 group">
+                            Start integrating
+                            <i class="ph-bold ph-arrow-right transition-transform group-hover:translate-x-1"></i>
+                        </button>
+                        <button class="bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-3.5 px-8 rounded-full transition-all shadow-sm flex items-center justify-center gap-2">
+                            Contact sales
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hero Image (AI Brain Security) -->
+                <div class="relative lg:ml-auto fade-in-up delay-200 w-full mt-10 lg:mt-0">
+                    <!-- Decorative glowing background -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-[500px] max-h-[500px] bg-brand-300/30 blur-[80px] rounded-full animate-pulse-slow"></div>
+                    
+                    <div class="relative animate-float z-10">
+                        <!-- MANDATORY: Image 1 Embedded -->
+                        <img src="watermarked_img_5804192476965857637.png" alt="AI Brain Security" class="w-full h-auto object-cover rounded-3xl shadow-stripe border border-white bg-white/50 p-2 backdrop-blur-sm" style="max-height: 600px;">
+                        
+                        <!-- Floating Glass Metric overlay -->
+                        <div class="absolute -bottom-8 -left-8 bg-white/95 backdrop-blur-xl border border-slate-100 p-5 rounded-2xl shadow-stripe-subtle flex items-center gap-4 z-20 hidden md:flex">
+                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                <i class="ph-bold ph-shield-check text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Authorization Rate</p>
+                                <p class="text-2xl font-black text-slate-900">99.9%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </main>
+
+    <!-- Feature Section 1: Security Shield -->
+    <section class="py-24 bg-white/80 backdrop-blur-md relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                
+                <!-- Left Image (Shield) -->
+                <div class="order-2 lg:order-1 relative fade-in-up">
+                    <div class="absolute inset-0 bg-accent-100/50 blur-[60px] rounded-full scale-90"></div>
+                    <!-- MANDATORY: Image 3 Embedded (Used here for narrative flow) -->
+                    <img src="watermarked_img_796304716790186719.png" alt="Secure Shield" class="relative z-10 w-full h-auto rounded-3xl shadow-stripe border border-slate-100 bg-white p-2">
+                </div>
+
+                <!-- Right Text -->
+                <div class="order-1 lg:order-2 fade-in-up delay-100">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 mb-6">
+                        <i class="ph-duotone ph-shield-star text-3xl"></i>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-6 tracking-tight">An impenetrable shield for your infrastructure.</h2>
+                    <p class="text-lg text-slate-600 mb-8 leading-relaxed font-medium">
+                        Our dynamic defense mechanisms evolve with every transaction. By analyzing device fingerprints, behavioral biometrics, and global IP reputations in real-time, we construct a resilient barrier around your payment flows.
+                    </p>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start gap-3">
+                            <i class="ph-fill ph-check-circle text-brand-500 text-xl mt-0.5"></i>
+                            <div>
+                                <h4 class="font-bold text-slate-900">Synthetic Identity Blocking</h4>
+                                <p class="text-slate-500 text-sm mt-1">Stops account creation using fabricated credentials instantly.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="ph-fill ph-check-circle text-brand-500 text-xl mt-0.5"></i>
+                            <div>
+                                <h4 class="font-bold text-slate-900">Account Takeover Prevention</h4>
+                                <p class="text-slate-500 text-sm mt-1">Recognizes anomalies in login behavior and device usage.</p>
+                            </div>
+                        </li>
+                    </ul>
+                    
+                    <a href="#" class="inline-flex items-center gap-2 text-brand-600 font-bold hover:text-brand-700 transition-colors group">
+                        Explore security architecture <i class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Section 2: Network Flow -->
+    <section class="py-24 bg-slate-50/80 backdrop-blur-md relative border-y border-slate-200/60 bg-grid-pattern">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                
+                <!-- Left Text -->
+                <div class="fade-in-up">
+                    <div class="w-12 h-12 rounded-2xl bg-accent-50 flex items-center justify-center text-accent-600 mb-6">
+                        <i class="ph-duotone ph-graph text-3xl"></i>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-6 tracking-tight">Uncover hidden connections in milliseconds.</h2>
+                    <p class="text-lg text-slate-600 mb-8 leading-relaxed font-medium">
+                        Fraudsters rarely act alone. Our advanced graph analytics map complex relationships between users, devices, and financial instruments across our global network, exposing organized fraud rings before they strike.
+                    </p>
+                    
+                    <div class="bg-white rounded-2xl p-6 shadow-stripe-subtle border border-slate-100 mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-bold text-slate-900">Graph Analysis Speed</span>
+                            <span class="text-sm font-bold text-accent-600">< 15ms</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2">
+                            <div class="bg-accent-500 h-2 rounded-full" style="width: 95%"></div>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="inline-flex items-center gap-2 text-accent-600 font-bold hover:text-accent-700 transition-colors group">
+                        See how our network works <i class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                </div>
+
+                <!-- Right Image (Network) -->
+                <div class="relative fade-in-up delay-100">
+                    <div class="absolute inset-0 bg-brand-100/50 blur-[60px] rounded-full scale-90"></div>
+                    <!-- MANDATORY: Image 2 Embedded -->
+                    <img src="watermarked_img_6161604422724432500.png" alt="Transaction Network Flow" class="relative z-10 w-full h-auto rounded-3xl shadow-stripe border border-slate-100 bg-white p-2">
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Preview Section -->
+    <section class="py-24 bg-white/80 backdrop-blur-md relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-16 fade-in-up">
+                <h2 class="text-brand-600 font-bold tracking-widest uppercase text-sm mb-3">Command Center</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Complete visibility into your risk profile.</h3>
+                <p class="text-slate-600 text-lg font-medium">A developer-friendly dashboard that gives risk teams the power to monitor, analyze, and deploy custom rulesets in real-time.</p>
+            </div>
+
+            <!-- The Dashboard UI Wrapper -->
+            <div class="bg-white rounded-[24px] border border-slate-200 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] fade-in-up overflow-hidden">
+                
+                <!-- Dashboard Header -->
+                <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-sm">
+                            <i class="ph-bold ph-layout text-sm"></i>
+                        </div>
+                        <span class="font-bold text-slate-900 tracking-tight">Vanguard Dashboard</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> System Operational
+                        </span>
+                        <div class="w-8 h-8 rounded-full bg-slate-200 border border-white shadow-sm overflow-hidden flex items-center justify-center text-slate-500 font-bold text-xs">
+                            AD
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Area -->
+                <div class="p-6 md:p-8 bg-slate-50/30">
+                    
+                    <!-- KPI Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <!-- KPI 1 -->
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden group">
+                            <div class="absolute right-0 top-0 w-24 h-24 bg-brand-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
+                            <p class="text-sm font-semibold text-slate-500 mb-1">Volume Analyzed</p>
+                            <h3 class="text-3xl font-black text-slate-900 mb-2">$42.8M</h3>
+                            <div class="flex items-center gap-1 text-xs font-bold text-green-600">
+                                <i class="ph-bold ph-trend-up"></i> +14.2% from last week
+                            </div>
+                        </div>
+                        <!-- KPI 2 -->
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden group">
+                            <div class="absolute right-0 top-0 w-24 h-24 bg-rose-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
+                            <p class="text-sm font-semibold text-slate-500 mb-1">Fraud Prevented</p>
+                            <h3 class="text-3xl font-black text-slate-900 mb-2">$1.24M</h3>
+                            <div class="flex items-center gap-1 text-xs font-bold text-rose-600">
+                                <i class="ph-bold ph-shield-warning"></i> 2,841 attacks blocked
+                            </div>
+                        </div>
+                        <!-- KPI 3 -->
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden group">
+                            <div class="absolute right-0 top-0 w-24 h-24 bg-amber-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
+                            <p class="text-sm font-semibold text-slate-500 mb-1">Active Rulesets</p>
+                            <h3 class="text-3xl font-black text-slate-900 mb-2">142</h3>
+                            <div class="flex items-center gap-1 text-xs font-bold text-amber-600">
+                                <i class="ph-bold ph-lightning"></i> 3 rules auto-optimized today
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart & Table Area -->
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                        
+                        <!-- Chart Area -->
+                        <div class="xl:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col">
+                            <div class="flex justify-between items-center mb-6">
+                                <h4 class="font-bold text-slate-900">Authentication & Fraud Trends</h4>
+                                <div class="flex bg-slate-100 p-1 rounded-lg">
+                                    <button class="px-3 py-1 text-xs font-bold bg-white text-slate-900 rounded shadow-sm">Today</button>
+                                    <button class="px-3 py-1 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors">7D</button>
+                                </div>
+                            </div>
+                            <div class="flex-1 relative min-h-[300px] w-full">
+                                <canvas id="fraudChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Mini Transaction Feed -->
+                        <div class="xl:col-span-1 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <h4 class="font-bold text-slate-900">Live Alerts</h4>
+                                <span class="bg-rose-100 text-rose-700 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider animate-pulse">Live</span>
+                            </div>
+                            <div class="flex-1 overflow-y-auto max-h-[340px] p-2 space-y-1">
+                                
+                                <!-- Alert Item (Critical) -->
+                                <div class="p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer group flex items-start gap-3">
+                                    <div class="mt-1 flex-shrink-0 w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between items-baseline mb-0.5">
+                                            <p class="text-sm font-bold text-slate-900 truncate">Card Testing Ring</p>
+                                            <p class="text-[10px] font-bold text-slate-400">Just now</p>
+                                        </div>
+                                        <p class="text-xs text-slate-500 font-medium truncate">Multiple low-value attempts.</p>
+                                        <p class="text-xs font-mono text-rose-600 mt-1 font-bold">Action: BLOCKED</p>
+                                    </div>
+                                </div>
+
+                                <!-- Alert Item (Warning) -->
+                                <div class="p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer group flex items-start gap-3">
+                                    <div class="mt-1 flex-shrink-0 w-2 h-2 rounded-full bg-amber-500"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between items-baseline mb-0.5">
+                                            <p class="text-sm font-bold text-slate-900 truncate">Velocity Spike</p>
+                                            <p class="text-[10px] font-bold text-slate-400">2m ago</p>
+                                        </div>
+                                        <p class="text-xs text-slate-500 font-medium truncate">Unusual volume from IP block.</p>
+                                        <p class="text-xs font-mono text-amber-600 mt-1 font-bold">Action: CHALLENGE (3DS)</p>
+                                    </div>
+                                </div>
+
+                                <!-- Alert Item (Safe) -->
+                                <div class="p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer group flex items-start gap-3 opacity-70">
+                                    <div class="mt-1 flex-shrink-0 w-2 h-2 rounded-full bg-slate-300"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between items-baseline mb-0.5">
+                                            <p class="text-sm font-bold text-slate-700 truncate">New Device Login</p>
+                                            <p class="text-[10px] font-bold text-slate-400">15m ago</p>
+                                        </div>
+                                        <p class="text-xs text-slate-500 font-medium truncate">Verified via biometric auth.</p>
+                                        <p class="text-xs font-mono text-green-600 mt-1 font-bold">Action: PASSED</p>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="p-3 border-t border-slate-100 bg-slate-50/50 text-center">
+                                <a href="#" class="text-xs font-bold text-brand-600 hover:text-brand-700">View all alerts &rarr;</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white/80 backdrop-blur-md border-t border-slate-200 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
+                <div class="col-span-2 lg:col-span-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white">
+                            <i class="ph-bold ph-shield-check text-lg"></i>
+                        </div>
+                        <span class="font-bold text-lg tracking-tight text-slate-900">Vanguard<span class="text-brand-600">.ai</span></span>
+                    </div>
+                    <p class="text-sm text-slate-500 max-w-xs font-medium leading-relaxed">
+                        Enterprise-grade fraud detection infrastructure built for modern financial technology companies.
+                    </p>
+                </div>
+                <div>
+                    <h5 class="font-bold text-slate-900 mb-4">Products</h5>
+                    <ul class="space-y-3 text-sm text-slate-500 font-medium">
+                        <li><a href="#" class="hover:text-brand-600 transition-colors">Fraud API</a></li>
+                        <li><a href="#" class="hover:text-brand-600 transition-colors">Identity Verification</a></li>
+                        <li><a href="#" class="hover:text-brand-600 transition-colors">Network Graph</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold text-slate-900 mb-4">Developers</h5>
+                    <ul class="space-y-3 text-sm text-slate-500 font-medium">
+                        <li><a href="#" class="hover:text-brand-600 transition-colors">Documentation</a></li>
+                        <li><a href="#" class="hover:text-brand-600 transition-colors">API Reference</a></li>
+                        <li><a href="#" class="hover:text-brand-600 transition-colors">Status</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold text-slate-900 mb-4">Company</h5>
+                    <ul class="space-y-3 text-sm text-slate-500 font-medium">
+                        <li><a href="#" class="hover:text-brand-600 transition-colors">About</a></li>
+                        <li><a href="#" class="hover:text-brand-600 transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-brand-600 transition-colors">Careers</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-slate-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-slate-400 text-sm font-medium">© 2026 Vanguard AI Systems. All rights reserved.</p>
+                <div class="flex gap-6 text-xl text-slate-400">
+                    <a href="#" class="hover:text-slate-900 transition-colors"><i class="ph-fill ph-twitter-logo"></i></a>
+                    <a href="#" class="hover:text-slate-900 transition-colors"><i class="ph-fill ph-github-logo"></i></a>
+                    <a href="#" class="hover:text-slate-900 transition-colors"><i class="ph-fill ph-linkedin-logo"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // Intersection Observer for scroll animations
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); 
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in-up').forEach(element => {
+                observer.observe(element);
+            });
+
+            // Initialize Chart.js
+            const ctx = document.getElementById('fraudChart').getContext('2d');
+            
+            // Premium Gradients
+            const gradientVolume = ctx.createLinearGradient(0, 0, 0, 350);
+            gradientVolume.addColorStop(0, 'rgba(203, 213, 225, 0.4)'); // Slate 300
+            gradientVolume.addColorStop(1, 'rgba(241, 245, 249, 0.0)'); // Slate 100
+
+            const gradientFraud = ctx.createLinearGradient(0, 0, 0, 350);
+            gradientFraud.addColorStop(0, 'rgba(59, 130, 246, 0.3)'); // Brand 500
+            gradientFraud.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
+                    datasets: [
+                        {
+                            label: 'Approved Volume',
+                            data: [320, 150, 680, 950, 810, 520, 290],
+                            borderColor: '#cbd5e1', // Slate 300
+                            backgroundColor: gradientVolume,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            fill: true,
+                            tension: 0.4 // Smooth curves
+                        },
+                        {
+                            label: 'Blocked Events',
+                            data: [15, 8, 45, 120, 65, 30, 12],
+                            borderColor: '#2563eb', // Brand 600
+                            backgroundColor: gradientFraud,
+                            borderWidth: 3,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#2563eb',
+                            pointBorderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a', // Slate 900
+                            titleColor: '#ffffff',
+                            bodyColor: '#cbd5e1',
+                            padding: 12,
+                            cornerRadius: 8,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            titleFont: { size: 13, weight: '600' },
+                            bodyFont: { size: 12, weight: '500' },
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: { font: { size: 11, weight: '600' }, color: '#94a3b8' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9', // Slate 100
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                maxTicksLimit: 5,
+                                font: { size: 11, weight: '600' },
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    if(value >= 1000) return value/1000 + 'k';
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
